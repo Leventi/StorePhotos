@@ -15,6 +15,7 @@ class Ok:
         self.params = {
             'application_key': application_key,
             'count': self.count,
+            'totalcount': 'detectTotalCount',
             'fid': self.fid,
             'format': 'json',
             'method': 'photos.getPhotos'
@@ -34,8 +35,15 @@ class Ok:
         return self.params
 
 
-    def ok_get_photo(self):
+    def ok_get_photo(self) -> tuple:
         res = requests.get(OK_URL, self.signature()).json()
+        have_photos = res['hasMore']
+
+        totalphotos = 0
+        try:
+            totalphotos = res['totalCount']
+        except KeyError:
+            pass
 
         ok_photos = {}
         for i in res['photos']:
@@ -43,5 +51,5 @@ class Ok:
             photo_size = i['pic640x480']
             ok_photos[photo_id] = photo_size
 
-        return ok_photos
+        return ok_photos, have_photos, totalphotos
 

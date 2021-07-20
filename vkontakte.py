@@ -1,5 +1,6 @@
 import json
 import requests
+import time
 
 VK_VER = '5.131'
 VK_URL = 'https://api.vk.com/method/'
@@ -8,12 +9,11 @@ with open('vktoken.txt', 'r') as vk_token:
     VK_TOKEN = vk_token.read()
 
 
-########################
-#Поиск фото по имени пользователя
-########################
 class VkPhoto:
-    def __init__(self, user_name, token=VK_TOKEN, version=VK_VER):
+    def __init__(self, user_name, album='profile', count=10, token=VK_TOKEN, version=VK_VER):
         self.user_name = user_name
+        self.album = album
+        self.count = count
         self.params = {
             'access_token': token,
             'v': version
@@ -28,33 +28,72 @@ class VkPhoto:
         user_id = res['response'][0]['id']
         return user_id
 
-    def get_photo(self):
+    def get_photo(self) -> tuple:
+        photo_dict = {}
+        vk_log_list = []
+
         get_photo_url = VK_URL + 'photos.get'
         photo_params = {
             'owner_id': self.get_user_id(),
-            'album_id': 'profile',
+            'album_id': self.album,
             'extended': '1',
             'photo_sizes': '1',
-            'count': '5'                        #Количество загружаемых фотографий
+            'count': self.count
         }
         res = requests.get(get_photo_url, params={**self.params, **photo_params}).json()
+        photo_quantity = res['response']['count']
 
-        photo_dict = {}
-        vk_log_list = []
-        for photo in res['response']['items']:
-            photo_size = photo['sizes'][-1]['type']
-            max_size_photos = photo['sizes'][-1]['url']
-            photo_name = str(photo['likes']['count']) + '.jpg'
 
-            if photo_name in photo_dict:
-                photo_name = str(photo['date']) + '_' + photo_name
+        if self.count >= 1000 and photo_quantity >= 1000:
+            iterations = int(self.count / 1000) + 1
+            print(f'Количество итераций {iterations}')
 
-            photo_dict[photo_name] = max_size_photos
+            for i in range(0, iterations, 1):
+                photo_params['offset'] = 1000 * i
+                photo_params['count'] -= photo_params['offset']
+                if photo_params['count'] <= 0:
+                    photo_params['count'] = 0
 
-            json_dict = {"file_name": photo_name, "size": photo_size}
-            vk_log_list.append(json_dict)
+                res = requests.get(get_photo_url, params={**self.params, **photo_params}).json()
+                time.sleep(0.2)
 
-        with open('vk_photo.json', 'w', encoding='utf-8') as file:
-            json.dump(vk_log_list, file, indent=2)
 
-        return photo_dict
+                for photo in res['response']['items']:
+                    photo_size = photo['sizes'][-1]['type']
+                    max_size_photos = photo['sizes'][-1]['url']
+                    photo_name = str(photo['likes']['count']) + '.jpg'
+
+                    if photo_name in photo_dict:
+                        photo_name = str(photo['date']) + '_' + photo_name
+
+                    photo_dict[photo_name] = max_size_photos
+
+                    json_dict = {"file_name": photo_name, "size": photo_size}
+                    vk_log_list.append(json_dict)
+
+                photo_dict.update(photo_dict)
+
+                with open('vk_photo.json', 'w', encoding='utf-8') as file:
+                    json.dump(vk_log_list, file, indent=2)
+
+        else:
+            for photo in res['response']['items']:
+                photo_size = photo['sizes'][-1]['type']
+                max_size_photos = photo['sizes'][-1]['url']
+                photo_name = str(photo['likes']['count']) + '.jpg'
+
+                if photo_name in photo_dict:
+                    photo_name = str(photo['date']) + '_' + photo_name
+
+                photo_dict[photo_name] = max_size_photos
+
+                json_dict = {"file_name": photo_name, "size": photo_size}
+                vk_log_list.append(json_dict)
+
+            photo_dict.update(photo_dict)
+
+            with open('vk_photo.json', 'w', encoding='utf-8') as file:
+                json.dump(vk_log_list, file, indent=2)
+
+        return photo_dict, photo_quantity
+
