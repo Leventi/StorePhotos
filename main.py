@@ -16,29 +16,27 @@ if __name__ == '__main__':
         if social_nw == '1':
             album = input(
                 """Выберите альбом:
-                1. Стена [wall]
-                2. Профиль [profile]
-                Укажите наименование: """
+                1. Стена [wall] [1]
+                2. Профиль [profile] [2]
+                Укажите наименование или индекс: """
             )
+            if album == '1' or album == 'wall':
+                album = 'wall'
+            else:
+                album = 'profile'
 
             account = input('Введите имя аккаунта: ')
 
             photo_count = int(input(
                 """Укажите количество фотографий: """
             ))
-            if photo_count > 1000:
-                while photo_count > 1000:
-                    photo_count = int(input(
-                        """За один раз можно скачать максимум 1000 фотографий
-        Укажите количество фотографий: """
-                    ))
 
             user_vk = VkPhoto(account, album, photo_count)
+            user_id_vk = user_vk.get_user_id()
 
             *_, photo_quantity_vk = user_vk.get_photo()
             print(f'Всего фотографий в этом разделе {photo_quantity_vk}. Вы запросили {photo_count}')
 
-            user_id_vk = user_vk.get_user_id()
             photo_dict_vk, photo_quantity_vk = user_vk.get_photo()
 
             upload_vk = YandexDisk(user_id_vk, photo_dict_vk)
@@ -68,9 +66,14 @@ if __name__ == '__main__':
             upload_ok.mk_dir()
 
         else:
-            listen = input('Неизвестная команда. Вы точно хотите выйти? ')
+            listen = input(
+                """Вы хотите выйти?
+                1. Да [1]
+                2. Нет [2]
+                Укажите индекс: """
+            )
 
-            if listen == 'Да':
+            if listen == '1':
                 break
             else:
                 pass

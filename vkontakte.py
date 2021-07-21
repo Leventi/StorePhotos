@@ -41,18 +41,20 @@ class VkPhoto:
             'count': self.count
         }
         res = requests.get(get_photo_url, params={**self.params, **photo_params}).json()
-        photo_quantity = res['response']['count']
 
+        try:
+            photo_quantity = res['response']['count']
+        except KeyError:
+            print(f'У пользователя {self.user_name} нет указанного количетсва фотографий в альбоме {self.album}')
+        time.sleep(0.2)
 
-        if self.count >= 1000 and photo_quantity >= 1000:
+        if self.count > 1000:
             iterations = int(self.count / 1000) + 1
-            print(f'Количество итераций {iterations}')
 
             for i in range(0, iterations, 1):
                 photo_params['offset'] = 1000 * i
-                photo_params['count'] -= photo_params['offset']
-                if photo_params['count'] <= 0:
-                    photo_params['count'] = 0
+                if i == iterations-1:
+                    photo_params['count'] -= 1000 * i
 
                 res = requests.get(get_photo_url, params={**self.params, **photo_params}).json()
                 time.sleep(0.2)
