@@ -1,12 +1,10 @@
+from settings import VK_TOKEN
 import json
 import requests
 import time
 
 VK_VER = '5.131'
 VK_URL = 'https://api.vk.com/method/'
-
-with open('vktoken.txt', 'r') as vk_token:
-    VK_TOKEN = vk_token.read()
 
 
 class VkPhoto:

@@ -1,11 +1,9 @@
+from settings import YA_TOKEN
 import requests
 import time
 from tqdm import tqdm
 
 YA_URL = 'https://cloud-api.yandex.net'
-
-with open('yatoken.txt', 'r') as ya_token:
-    YA_TOKEN = ya_token.read()
 
 
 ########################

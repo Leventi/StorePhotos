@@ -1,11 +1,8 @@
+from settings import application_key, access_token, session_secret_key
 from hashlib import md5
 import requests
 
 OK_URL = "https://api.ok.ru/fb.do"
-
-application_key = 'CBIGGQJGDIHBABABA'
-access_token = 'tkn1YWkxKN4ZTVnhfGafWqLv0DgmJELvquiODn9Ta6ZOrltSPI6yvx4vAA5RKfH89Wuku6'
-session_secret_key = 'e5050332fce045d12ad1b3fa6e7b4ba8'
 
 
 class Ok:
